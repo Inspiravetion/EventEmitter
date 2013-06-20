@@ -1,4 +1,3 @@
-
 use core::hashmap::linear::LinearMap;
 
 struct EventEmitter{
