@@ -1,15 +1,15 @@
 use core::hashmap::linear::LinearMap;
 
 struct EventEmitter{
-  priv events : LinearMap<~str, ~[@fn (@Event)]>
+  priv events : @mut LinearMap<~str, ~[@fn (@Event)]>
 } 
 
 struct Event {
-  data : @Owned
+  data : @str
 }
 
 impl Event {
-  fn new(d : @Owned) -> @Event {
+  fn new(d : @str) -> @Event {
     @Event {
       data : d
     }
@@ -20,13 +20,10 @@ impl EventEmitter {
 
   fn new() -> EventEmitter {
     EventEmitter {
-      events : LinearMap::new()
+      events : @mut LinearMap::new()
     }
   }
 
-  /*
-    google says this is a compiker error...we shall see
-   */
   fn on(&mut self, evt : ~str, handlr : @fn (@Event)){
     let evt_handlers = self.events.find_mut(&evt);
     match evt_handlers {
@@ -47,7 +44,7 @@ impl EventEmitter {
       None => {
         match optHandlr {
           //emitter.off()
-          None => self.events = LinearMap::new(),
+          None => self.events = @mut LinearMap::new(),
           //emitter.off(myManagedFunc)
           Some(func) => {
             //this one will require more thought...lol
@@ -83,7 +80,7 @@ impl EventEmitter {
     };
   }
 
-  fn emit(&self, evt : ~str, data : @Owned){
+  fn emit(&self, evt : ~str, data : @str){
     let evt_handlers = self.events.find(&evt);
     match evt_handlers {
       None => return,
@@ -96,8 +93,21 @@ impl EventEmitter {
 }
 
 fn main() {
+  let mut m = EventEmitter::new();
+  m.on(~"ejaculation", |e| {
+    println(e.data);
+  });
+
+  m.on(~"ejaculation", |e| {
+    println("------");
+    println(e.data);
+  });
+
+  m.emit(~"ejaculation", @"steve");
+
+  m.off(Some(~"ejaculation"), None);
+  m.emit(~"ejaculation", @"steve");
   
 }
 
-//*** both on and off suffer from the same error...google says it is a compiler issue
-// error: loan of mutable field as mutable conflicts with prior loan
+//generics...full acces to data
